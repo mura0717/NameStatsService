@@ -6,6 +6,7 @@ import dat3.webclientexercise.dtos.CountryResponse;
 import dat3.webclientexercise.dtos.GenderResponse;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 @Service
@@ -50,8 +51,8 @@ public class NameStatsService {
         return countryResponse;
     }
 
-
-    public CombinedResponse getNameStats(String name) {
+//Blocking
+/*    public CombinedResponse getNameStats(String name) {
 
         String nameUpperCased = name.toUpperCase(); // For Cache
 
@@ -62,7 +63,19 @@ public class NameStatsService {
         var rs = Mono.zip(genderResponseMono, ageResponseMono, countryResponseMono).map(t ->
             new CombinedResponse(name, t.getT1(), t.getT2(), t.getT3()));
         CombinedResponse combinedResponse = rs.block();
-        System.out.println("combinedResponse = " + combinedResponse);
+       // System.out.println("combinedResponse = " + combinedResponse);
         return combinedResponse;
+    }*/
+
+    //Non-Blocking
+    public Mono<CombinedResponse> getNameStats(String name) {
+        Mono<GenderResponse> genderResponseMono = getGenderForName(name);
+        Mono<AgeResponse> ageResponseMono = getAgeForName(name);
+        Mono<CountryResponse> countryResponseMono = getCountryForName(name);
+
+        return Flux.zip(genderResponseMono, ageResponseMono, countryResponseMono)
+                .map(t -> new CombinedResponse(name, t.getT1(), t.getT2(), t.getT3()))
+                .single(); // Only one CombinedResponse object is emitted
     }
+
 }

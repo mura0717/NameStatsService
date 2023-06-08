@@ -52,7 +52,9 @@ public class NameStatsService {
     }
 
 //Blocking
-/*    public CombinedResponse getNameStats(String name) {
+    public CombinedResponse getNameStats(String name) {
+
+        long startTime = System.currentTimeMillis();
 
         String nameUpperCased = name.toUpperCase(); // For Cache
 
@@ -63,19 +65,35 @@ public class NameStatsService {
         var rs = Mono.zip(genderResponseMono, ageResponseMono, countryResponseMono).map(t ->
             new CombinedResponse(name, t.getT1(), t.getT2(), t.getT3()));
         CombinedResponse combinedResponse = rs.block();
-       // System.out.println("combinedResponse = " + combinedResponse);
+
+        long endTime = System.currentTimeMillis();
+        long elapsedTime = endTime - startTime;
+
+        System.out.println("Elapsed time= " + elapsedTime + " miliseconds" + " & " + "combinedResponse = " + combinedResponse);
+
         return combinedResponse;
-    }*/
+    }
 
     //Non-Blocking
-    public Mono<CombinedResponse> getNameStats(String name) {
+    public Mono<CombinedResponse> getNameStatsAsynch(String name) {
+
+        long startTime = System.currentTimeMillis();
+
         Mono<GenderResponse> genderResponseMono = getGenderForName(name);
         Mono<AgeResponse> ageResponseMono = getAgeForName(name);
         Mono<CountryResponse> countryResponseMono = getCountryForName(name);
 
-        return Flux.zip(genderResponseMono, ageResponseMono, countryResponseMono)
+        Mono<CombinedResponse> combinedResponse = Flux.zip(genderResponseMono, ageResponseMono, countryResponseMono)
                 .map(t -> new CombinedResponse(name, t.getT1(), t.getT2(), t.getT3()))
                 .single(); // Only one CombinedResponse object is emitted
+
+        long endTime = System.currentTimeMillis();
+        long elapsedTime = endTime - startTime;
+
+        System.out.println("Elapsed time= " + elapsedTime + " miliseconds" + " & " + "combinedResponse = " + this.combinedResponse);
+
+        return combinedResponse;
     }
+
 
 }

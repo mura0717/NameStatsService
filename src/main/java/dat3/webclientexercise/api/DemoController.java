@@ -25,13 +25,23 @@ public class DemoController {
     }
 
 
-    @GetMapping(value= "/name-info")
-    public Mono<CombinedResponse> nameCheck (@RequestParam("name") String name) throws InterruptedException {
+    @GetMapping(value= "/non-blocking/name-info")
+    public Mono<CombinedResponse> nameCheckNonBlocking(@RequestParam("name") String name) throws InterruptedException {
+        return nameStatsService.getNameStatsAsynch(name);
+    }
+
+    @PostMapping("/non-blocking/name-info")
+    public Mono<CombinedResponse> submitNameNonBlocking(@RequestParam("name") String name) throws InterruptedException {
+        return nameStatsService.getNameStatsAsynch(name);
+    }
+
+    @GetMapping(value= "/blocking/name-info")
+    public CombinedResponse nameCheckBlocking(@RequestParam("name") String name) throws InterruptedException {
         return nameStatsService.getNameStats(name);
     }
 
-    @PostMapping("/name-info")
-    public Mono<CombinedResponse> submitName(@RequestParam("fname") String name) throws InterruptedException {
+    @PostMapping("/blocking/name-info")
+    public CombinedResponse submitNameBlocking(@RequestParam("name") String name) throws InterruptedException {
         return nameStatsService.getNameStats(name);
     }
 
